@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Slider - Main</title>
+  <link rel="stylesheet" href="mainstyle.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" />
+</head>
+<body>
+  <header>
+  </header>
+  <section class="wrapper">
+      <i class="fa-solid fa-arrow-left button" id="prev"></i>
+      <div class="image-container">
+        <div class="carousel">
+          <div class="slide">
+            <img src="photos/image1.jpg" alt="image1" /><p class="caption">Purple kit ronaldo at real madrid</p>
+          </div>
+          <div class="slide">
+            <img src="photos/image2.jpg" alt="image2" /><p class="caption">Ronaldo rocked the black kit portugal absolutely looked clean</p>
+          </div>
+          <div class="slide">
+            <img src="photos/image3.jpg" alt="image3" /><p class="caption">Noodle hair ronaldo one of the most lethal footballers in the world</p>
+          </div>
+          <div class="slide">
+            <img src="photos/image4.jpg" alt="image4" /><p class="caption">Al nassr ronaldo still going strong</p>
+          </div>
+          <div class="slide">
+            <img src="photos/image5.jpg" alt="image5" /><p class="caption">Man utd ronaldo always the GOAT</p>
+          </div>
+        </div>
+        <i class="fa-solid fa-arrow-right button" id="next"></i>
+      </div>
+    </section>
+    <a href="index.html" class="logout-btn">Logout</a>
+
+  <script defer src="mainpage.js"></script>
+  <script defer src="auth.js"></script>
+  <script defer src="init.js"></script>
+
+  <audio id="bg-music" controls autoplay loop hidden>
+    <source src="audio/Portrait of Time - Aakash Gandhi.mp3" type="audio/mp3">
+  </audio>
+</body>
+</html>
