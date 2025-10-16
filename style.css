@@ -70,7 +70,7 @@ body {
 .btn {
   width: 100%;
   padding: 0.8rem;
-  background: #068ef0;
+  background: #42abf7;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -80,7 +80,7 @@ body {
 }
 
 .btn:hover {
-  background: #ea5151;
+  background: #0994f7;
 }
 
 .error {

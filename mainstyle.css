@@ -8,7 +8,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #bda393;
+  background: #96d1fc;
 }
 .wrapper {
   display: flex;
@@ -28,7 +28,7 @@ body {
   transform: translateY(-50%);
   height: 36px;
   width: 36px;
-  background-color: #de632f;
+  background-color: #0994f7;
   border-radius: 50%;
   text-align: center;
   line-height: 36px;
@@ -96,7 +96,7 @@ i#next {
   display: inline-block;
   margin-top: 1rem;
   padding: 0.6rem 1.2rem;
-  background: #ba4747;
+  background: #42abf7;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -109,5 +109,5 @@ i#next {
 }
 
 .logout-btn:hover{
-    background: #ea5151;
+    background: #0994f7;
 }
