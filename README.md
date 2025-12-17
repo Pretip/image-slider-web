@@ -5,4 +5,4 @@
 <p>https://image-slider-web.vercel.app/</p>
 
 <h2>Screenshots</h2>
-<img>![alt text](image.png)</img>
+<img src="photos/screenshots/Screenshot-1.png" alt="screenshot1" />
