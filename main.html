@@ -8,39 +8,92 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" />
 </head>
 <body>
-  <header>
-  </header>
-  <section class="wrapper">
-      <i class="fa-solid fa-arrow-left button" id="prev"></i>
-      <div class="image-container">
-        <div class="carousel">
-          <div class="slide">
-            <img src="photos/image1.jpg" alt="image1" /><p class="caption">Beautiful beach</p>
-          </div>
-          <div class="slide">
-            <img src="photos/image2.jpg" alt="image2" /><p class="caption">Beautiful sea at the beach</p>
-          </div>
-          <div class="slide">
-            <img src="photos/image3.jpg" alt="image3" /><p class="caption">Lovely Perhentian beach in Malaysia</p>
-          </div>
-          <div class="slide">
-            <img src="photos/image4.jpg" alt="image4" /><p class="caption">Beach view in night time looks so calm and beautiful</p>
-          </div>
-          <div class="slide">
-            <img src="photos/image5.jpg" alt="image5" /><p class="caption">Day time at the beach😍</p>
-          </div>
-        </div>
-        <i class="fa-solid fa-arrow-right button" id="next"></i>
-      </div>
-    </section>
-    <a href="index.html" class="logout-btn">Logout</a>
 
+  <!-- Top Navigation / Header -->
+  <header>
+    <a href="index.html" class="logout-btn">Logout</a>
+  </header>
+
+  <!-- Carousel Section -->
+  <section class="wrapper">
+    <i class="fa-solid fa-arrow-left button" id="prev"></i>
+    
+    <div class="image-container">
+      <div class="carousel">
+        <!-- Default Static Slides -->
+        <div class="slide">
+          <img src="photos/image1.jpg" alt="image1" />
+          <p class="caption">Beautiful beach</p>
+        </div>
+        <div class="slide">
+          <img src="photos/image2.jpg" alt="image2" />
+          <p class="caption">Beautiful sea at the beach</p>
+        </div>
+        <div class="slide">
+          <img src="photos/image3.jpg" alt="image3" />
+          <p class="caption">Lovely Perhentian beach in Malaysia</p>
+        </div>
+        <div class="slide">
+          <img src="photos/image4.jpg" alt="image4" />
+          <p class="caption">Beach view in night time looks so calm and beautiful</p>
+        </div>
+        <div class="slide">
+          <img src="photos/image5.jpg" alt="image5" />
+          <p class="caption">Day time at the beach😍</p>
+        </div>
+      </div>
+    </div>
+
+    <i class="fa-solid fa-arrow-right button" id="next"></i>
+  </section>
+
+  <!-- Upload & Delete Controls Container -->
+  <div class="upload-container">
+    <input 
+      type="text" 
+      id="caption-input" 
+      placeholder="Enter caption for photo..." 
+    />
+
+    <div class="button-group">
+      <!-- Hidden file input -->
+      <input type="file" id="actual-btn" accept="image/*" hidden />
+      
+      <!-- Upload Button -->
+      <label for="actual-btn" class="upload-btn">Upload Photo</label>
+      
+      <!-- Delete Button (triggers modal picker) -->
+      <button id="delete-trigger-btn" class="delete-trigger-btn">
+        <i class="fa-solid fa-trash"></i> Delete Photo
+      </button>
+    </div>
+
+    <span id="file-chosen">No file chosen</span>
+  </div>
+
+  <!-- Delete Selection Modal -->
+  <div id="delete-modal" class="modal">
+    <div class="modal-content">
+      <h3>Select a photo to delete</h3>
+      <select id="delete-photo-select">
+        <option value="" disabled selected>-- Choose a photo --</option>
+      </select>
+      <div class="modal-actions">
+        <button id="confirm-delete-btn" class="btn-danger">Delete Selected</button>
+        <button id="cancel-delete-btn" class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Background Audio -->
+  <audio id="bg-music" controls autoplay loop hidden>
+    <source src="audio/Portrait of Time - Aakash Gandhi.mp3" type="audio/mp3">
+  </audio>
+
+  <!-- JavaScript Scripts -->
   <script defer src="mainpage.js"></script>
   <script defer src="auth.js"></script>
   <script defer src="init.js"></script>
 
-  <audio id="bg-music" controls autoplay loop hidden>
-    <source src="audio/Portrait of Time - Aakash Gandhi.mp3" type="audio/mp3">
-  </audio>
 </body>
 </html>
