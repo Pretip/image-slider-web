@@ -1,3 +1,9 @@
+// --- SUPABASE CONFIGURATION ---
+const SUPABASE_URL = "https://mhepoohjzxonhwchsbwz.supabase.co/rest/v1/";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oZXBvb2hqenhvbmh3Y2hzYnd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5MDg0MzksImV4cCI6MjEwMTQ4NDQzOX0.zjubT556h1Vh2njYpeMLwiDnyhoRJqhdLH3codpFvyc";
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 // Carousel Elements
 const wrapper = document.querySelector(".wrapper");
 const carousel = document.querySelector(".carousel");
@@ -17,24 +23,6 @@ const cancelDeleteBtn = document.getElementById("cancel-delete-btn");
 
 let imageIndex = 0;
 let intervalId;
-
-// --- INDEXEDDB SETUP ---
-let db;
-const dbRequest = indexedDB.open("PhotoCarouselDB", 1);
-
-dbRequest.onupgradeneeded = (e) => {
-  db = e.target.result;
-  if (!db.objectStoreNames.contains("photos")) {
-    db.createObjectStore("photos", { keyPath: "id", autoIncrement: true });
-  }
-};
-
-dbRequest.onsuccess = (e) => {
-  db = e.target.result;
-  loadStoredPhotos();
-};
-
-dbRequest.onerror = (e) => console.error("IndexedDB error:", e.target.error);
 
 // --- CAROUSEL SLIDER LOGIC ---
 const autoSlide = () => {
@@ -91,106 +79,149 @@ function renderCarouselSlide(id, imageSrc, captionText) {
   carousel.appendChild(carouselSlide);
 }
 
-// --- SAVE PHOTO TO DB ---
-function savePhotoToDB(imageSrc, captionText) {
-  const transaction = db.transaction(["photos"], "readwrite");
-  const store = transaction.objectStore("photos");
+// --- FETCH & LISTEN FOR SUPABASE PHOTOS ---
+async function loadPhotos() {
+  const { data: photos, error } = await supabase
+    .from("photos")
+    .select("*")
+    .order("created_at", { ascending: true });
 
-  const addReq = store.add({ imageSrc, captionText });
-  addReq.onsuccess = (e) => {
-    const id = e.target.result;
-    renderCarouselSlide(id, imageSrc, captionText);
+  if (error) {
+    console.error("Error loading photos:", error);
+    return;
+  }
 
-    // Jump to the new slide
-    const totalSlides = carousel.querySelectorAll(".slide").length;
-    imageIndex = totalSlides - 1;
-    slideImage();
-    autoSlide();
-  };
+  carousel.innerHTML = "";
+  
+  if (photos.length === 0) {
+    // Optional fallback message if no images exist yet
+    const emptyMsg = document.createElement("p");
+    emptyMsg.style.textAlign = "center";
+    emptyMsg.style.padding = "20px";
+    emptyMsg.textContent = "No photos uploaded yet. Upload one below!";
+    carousel.appendChild(emptyMsg);
+    return;
+  }
+
+  photos.forEach((p) => renderCarouselSlide(p.id, p.image_src, p.caption_text));
+  slideImage();
 }
 
-// --- LOAD STORED PHOTOS ---
-function loadStoredPhotos() {
-  const transaction = db.transaction(["photos"], "readonly");
-  const store = transaction.objectStore("photos");
-  const getAllReq = store.getAll();
+// Subscribe to real-time additions/deletions across devices
+supabase
+  .channel("public:photos")
+  .on("postgres_changes", { event: "*", schema: "public", table: "photos" }, () => {
+    loadPhotos();
+  })
+  .subscribe();
 
-  getAllReq.onsuccess = () => {
-    const photos = getAllReq.result;
-    photos.forEach((p) => renderCarouselSlide(p.id, p.imageSrc, p.captionText));
-  };
-}
+// Initial load on page startup
+loadPhotos();
 
 // --- UPLOAD HANDLER ---
-actualBtn.addEventListener("change", function () {
+actualBtn.addEventListener("change", async function () {
   if (this.files && this.files[0]) {
-    const selectedFile = this.files[0];
-    fileChosen.textContent = selectedFile.name;
+    const file = this.files[0];
+    fileChosen.textContent = file.name;
 
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      const imageSrc = e.target.result;
-      const customCaptionText = captionInput.value.trim();
-      const finalCaption = customCaptionText !== "" ? customCaptionText : selectedFile.name;
+    const customCaptionText = captionInput.value.trim();
+    const finalCaption = customCaptionText !== "" ? customCaptionText : file.name;
 
-      savePhotoToDB(imageSrc, finalCaption);
+    try {
+      const fileName = `${Date.now()}_${file.name}`;
+
+      // 1. Upload file to Supabase Storage
+      const { data: storageData, error: storageError } = await supabase.storage
+        .from("photos")
+        .upload(fileName, file);
+
+      if (storageError) throw storageError;
+
+      // 2. Get Public Image URL
+      const { data: publicUrlData } = supabase.storage
+        .from("photos")
+        .getPublicUrl(fileName);
+
+      const publicUrl = publicUrlData.publicUrl;
+
+      // 3. Save metadata to Postgres database
+      const { error: dbError } = await supabase.from("photos").insert([
+        {
+          image_src: publicUrl,
+          caption_text: finalCaption,
+          storage_path: fileName,
+        },
+      ]);
+
+      if (dbError) throw dbError;
+
       captionInput.value = "";
-    };
-
-    reader.readAsDataURL(selectedFile);
-  } else {
-    fileChosen.textContent = "No file chosen";
+      fileChosen.textContent = "No file chosen";
+      actualBtn.value = "";
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Failed to upload photo.");
+    }
   }
 });
 
-// --- DELETE SELECTION MODAL LOGIC ---
-deleteTriggerBtn.addEventListener("click", () => {
-  const transaction = db.transaction(["photos"], "readonly");
-  const store = transaction.objectStore("photos");
-  const getAllReq = store.getAll();
+// --- DELETE LOGIC ---
+deleteTriggerBtn.addEventListener("click", async () => {
+  const { data: photos, error } = await supabase.from("photos").select("*");
 
-  getAllReq.onsuccess = () => {
-    const photos = getAllReq.result;
-    deletePhotoSelect.innerHTML = '<option value="" disabled selected>-- Choose a photo --</option>';
+  if (error) {
+    console.error("Error fetching photos for delete:", error);
+    return;
+  }
 
-    if (photos.length === 0) {
-      alert("No uploaded photos available to delete.");
-      return;
-    }
+  deletePhotoSelect.innerHTML = '<option value="" disabled selected>-- Choose a photo --</option>';
 
-    photos.forEach((p) => {
-      const option = document.createElement("option");
-      option.value = p.id;
-      option.textContent = p.captionText;
-      deletePhotoSelect.appendChild(option);
-    });
+  if (!photos || photos.length === 0) {
+    alert("No uploaded photos available to delete.");
+    return;
+  }
 
-    deleteModal.classList.add("active");
-  };
+  photos.forEach((p) => {
+    const option = document.createElement("option");
+    option.value = p.id;
+    option.dataset.storagePath = p.storage_path;
+    option.textContent = p.caption_text;
+    deletePhotoSelect.appendChild(option);
+  });
+
+  deleteModal.classList.add("active");
 });
 
 cancelDeleteBtn.addEventListener("click", () => {
   deleteModal.classList.remove("active");
 });
 
-confirmDeleteBtn.addEventListener("click", () => {
-  const selectedId = parseInt(deletePhotoSelect.value, 10);
-  if (!selectedId) {
+confirmDeleteBtn.addEventListener("click", async () => {
+  const selectedOption = deletePhotoSelect.options[deletePhotoSelect.selectedIndex];
+  const photoId = selectedOption.value;
+  const storagePath = selectedOption.dataset.storagePath;
+
+  if (!photoId) {
     alert("Please select a photo to delete.");
     return;
   }
 
-  const transaction = db.transaction(["photos"], "readwrite");
-  const store = transaction.objectStore("photos");
+  try {
+    // 1. Delete file from Storage bucket
+    if (storagePath) {
+      await supabase.storage.from("photos").remove([storagePath]);
+    }
 
-  store.delete(selectedId).onsuccess = () => {
-    const slideToRemove = carousel.querySelector(`[data-photo-id="${selectedId}"]`);
-    if (slideToRemove) slideToRemove.remove();
+    // 2. Delete row from Database
+    const { error } = await supabase.from("photos").delete().eq("id", photoId);
+    if (error) throw error;
 
     deleteModal.classList.remove("active");
     imageIndex = 0;
-    slideImage();
-  };
+  } catch (error) {
+    console.error("Delete error:", error);
+    alert("Failed to delete photo.");
+  }
 });
 
 // Audio Autoplay Handler
