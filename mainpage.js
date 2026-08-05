@@ -1,8 +1,10 @@
+console.log("mainpage.js loaded successfully!");
+
 // --- SUPABASE CONFIGURATION ---
-const SUPABASE_URL = "https://mhepoohjzxonhwchsbwz.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://mhepoohjzxonhwchsbwz.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oZXBvb2hqenhvbmh3Y2hzYnd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5MDg0MzksImV4cCI6MjEwMTQ4NDQzOX0.zjubT556h1Vh2njYpeMLwiDnyhoRJqhdLH3codpFvyc";
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Carousel Elements
 const wrapper = document.querySelector(".wrapper");
@@ -81,7 +83,8 @@ function renderCarouselSlide(id, imageSrc, captionText) {
 
 // --- FETCH & LISTEN FOR SUPABASE PHOTOS ---
 async function loadPhotos() {
-  const { data: photos, error } = await supabase
+  // FIXED: Changed supabase to supabaseClient
+  const { data: photos, error } = await supabaseClient
     .from("photos")
     .select("*")
     .order("created_at", { ascending: true });
@@ -94,7 +97,6 @@ async function loadPhotos() {
   carousel.innerHTML = "";
   
   if (photos.length === 0) {
-    // Optional fallback message if no images exist yet
     const emptyMsg = document.createElement("p");
     emptyMsg.style.textAlign = "center";
     emptyMsg.style.padding = "20px";
@@ -107,8 +109,8 @@ async function loadPhotos() {
   slideImage();
 }
 
-// Subscribe to real-time additions/deletions across devices
-supabase
+// FIXED: Changed supabase to supabaseClient
+supabaseClient
   .channel("public:photos")
   .on("postgres_changes", { event: "*", schema: "public", table: "photos" }, () => {
     loadPhotos();
@@ -120,8 +122,11 @@ loadPhotos();
 
 // --- UPLOAD HANDLER ---
 actualBtn.addEventListener("change", async function () {
+  console.log("File change event triggered!");
+
   if (this.files && this.files[0]) {
     const file = this.files[0];
+    console.log("Selected file:", file.name);
     fileChosen.textContent = file.name;
 
     const customCaptionText = captionInput.value.trim();
@@ -129,23 +134,30 @@ actualBtn.addEventListener("change", async function () {
 
     try {
       const fileName = `${Date.now()}_${file.name}`;
+      console.log("Uploading to Supabase Storage...");
 
-      // 1. Upload file to Supabase Storage
-      const { data: storageData, error: storageError } = await supabase.storage
+      // FIXED: Changed supabase to supabaseClient
+      const { data: storageData, error: storageError } = await supabaseClient.storage
         .from("photos")
         .upload(fileName, file);
 
-      if (storageError) throw storageError;
+      if (storageError) {
+        console.error("Storage upload error:", storageError);
+        throw storageError;
+      }
 
-      // 2. Get Public Image URL
-      const { data: publicUrlData } = supabase.storage
+      console.log("Storage upload successful!");
+
+      // FIXED: Changed supabase to supabaseClient
+      const { data: publicUrlData } = supabaseClient.storage
         .from("photos")
         .getPublicUrl(fileName);
 
       const publicUrl = publicUrlData.publicUrl;
+      console.log("Public URL generated:", publicUrl);
 
-      // 3. Save metadata to Postgres database
-      const { error: dbError } = await supabase.from("photos").insert([
+      // Save metadata to Postgres database
+      const { error: dbError } = await supabaseClient.from("photos").insert([
         {
           image_src: publicUrl,
           caption_text: finalCaption,
@@ -153,21 +165,28 @@ actualBtn.addEventListener("change", async function () {
         },
       ]);
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error("Database insert error:", dbError);
+        throw dbError;
+      }
+
+      console.log("Database entry saved!");
 
       captionInput.value = "";
       fileChosen.textContent = "No file chosen";
       actualBtn.value = "";
     } catch (error) {
-      console.error("Upload error:", error);
-      alert("Failed to upload photo.");
+      console.error("Full upload error:", error);
+      alert("Failed to upload photo: " + error.message);
     }
+  } else {
+    console.log("No file selected.");
   }
 });
 
 // --- DELETE LOGIC ---
 deleteTriggerBtn.addEventListener("click", async () => {
-  const { data: photos, error } = await supabase.from("photos").select("*");
+  const { data: photos, error } = await supabaseClient.from("photos").select("*");
 
   if (error) {
     console.error("Error fetching photos for delete:", error);
@@ -209,11 +228,11 @@ confirmDeleteBtn.addEventListener("click", async () => {
   try {
     // 1. Delete file from Storage bucket
     if (storagePath) {
-      await supabase.storage.from("photos").remove([storagePath]);
+      await supabaseClient.storage.from("photos").remove([storagePath]);
     }
 
     // 2. Delete row from Database
-    const { error } = await supabase.from("photos").delete().eq("id", photoId);
+    const { error } = await supabaseClient.from("photos").delete().eq("id", photoId);
     if (error) throw error;
 
     deleteModal.classList.remove("active");

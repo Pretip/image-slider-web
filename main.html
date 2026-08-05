@@ -35,17 +35,17 @@
     />
 
     <div class="button-group">
-      <!-- Hidden file input -->
-      <input type="file" id="actual-btn" accept="image/*" hidden />
-      
-      <!-- Upload Button -->
-      <label for="actual-btn" class="upload-btn">Upload Photo</label>
-      
-      <!-- Delete Button (triggers modal picker) -->
-      <button id="delete-trigger-btn" class="delete-trigger-btn">
-        <i class="fa-solid fa-trash"></i> Delete Photo
-      </button>
-    </div>
+  <!-- Hidden file input -->
+  <input type="file" id="actual-btn" accept="image/*" hidden />
+  
+  <!-- Upload Button Label (MUST have for="actual-btn") -->
+  <label for="actual-btn" class="upload-btn">Upload Photo</label>
+  
+  <!-- Delete Button -->
+  <button id="delete-trigger-btn" class="delete-trigger-btn">
+    <i class="fa-solid fa-trash"></i> Delete Photo
+  </button>
+</div>
 
     <span id="file-chosen">No file chosen</span>
   </div>
