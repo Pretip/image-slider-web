@@ -11,12 +11,14 @@ body {
   align-items: center;
   justify-content: flex-start;
   background: #96d1fc;
-  padding: 40px 20px;
+  padding: 80px 20px 40px 20px; /* Increased top padding so content doesn't cover fixed elements */
 }
 
-/* Header & Logout Button */
+/* Header & Floating Logout Button */
 .logout-btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0.6rem 1.2rem;
   background: #007bff;
   color: #fff;
@@ -25,15 +27,23 @@ body {
   cursor: pointer;
   text-decoration: none;
   font-size: 1rem;
+  font-weight: 600;
   position: fixed;
-  top: 30px;
-  right: 30px;
+  top: 20px;
+  right: 20px;
   z-index: 1000;
-  transition: background 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Shadow keeps it legible when scrolling over content */
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .logout-btn:hover {
   background: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
 }
 
 /* Carousel Outer Card */
@@ -269,4 +279,35 @@ i#next {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+}
+
+/* --- MOBILE RESPONSIVE ADJUSTMENTS --- */
+@media (max-width: 600px) {
+  body {
+    padding-top: 70px; /* Reduces top gap on small mobile screens */
+  }
+
+  .logout-btn {
+    top: 12px;
+    right: 12px;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+  }
+
+  .wrapper {
+    height: 420px; /* Scales down carousel height on small mobile screens */
+  }
+
+  .image-container {
+    height: 350px;
+  }
+
+  i#prev {
+    left: 10px;
+  }
+
+  i#next {
+    right: 10px;
+  }
 }
