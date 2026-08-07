@@ -5,6 +5,7 @@
 <h2>Tech Stack</h2>
 <p>● Database and Storage: Supabase<p>
 <p>● Hosting: Vercel<p>
+<p>● Testing: Playwright<p>
 <p>● Programming Language: HTML, CSS and Vanilla Javascript<p>
 
 <h2>Website link:</h2>
