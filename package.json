@@ -1,0 +1,23 @@
+{
+  "name": "image-slider-web",
+  "version": "1.0.0",
+  "description": "<h1>Image Slider Website</h1>\r <h2>Description</h2>\r <p>This is a simple image slider website that I have built during my free time using vanilla javascript. This website comes with login page and main page where the main page automatically slides photos and also allows user to navigate rigth or left. User can able to upload and delete photos. User can also write their own caption for each photos. And also audio song is being played as background</p>",
+  "main": "auth.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pretip/image-slider-web.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Pretip/image-slider-web/issues"
+  },
+  "homepage": "https://github.com/Pretip/image-slider-web#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.1.2"
+  }
+}
