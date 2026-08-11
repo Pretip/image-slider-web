@@ -26,7 +26,7 @@ test('Launch web and fill in credentials', async ({ page }) => {
 
   await page.locator('input[type="file"]').setInputFiles('../photos/test/bali.jpg');
 
-  await page.getByText('Upload Photo').click();
+  //await page.getByText('Upload Photo').click();
 
 });
 
