@@ -1,5 +1,7 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
+import path from 'node:path';
+
 
 test('Launch web and fill in credentials', async ({ page }) => {
   test.setTimeout(60000);
@@ -24,9 +26,10 @@ test('Launch web and fill in credentials', async ({ page }) => {
   // Upload photo and caption
   await page.locator('#caption-input').fill('This is playwright automation');
 
-  //await page.locator('input[type="file"]').setInputFiles('../photos/test/bali.jpg');
-
-  //await page.getByText('Upload Photo').click();
+  const imagePath = path.resolve(__dirname, '../photos/test/bali.jpg');
+  await page.locator('input[type="file"]').setInputFiles(imagePath);
+  
+  await page.getByText('Upload Photo', { exact: true }).click();
 
 });
 
